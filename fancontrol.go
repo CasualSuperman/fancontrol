@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"os"
-	"time"
 )
 
 type jsonConfigFile struct {
@@ -116,10 +115,10 @@ func main() {
 	config = nil
 
 	for i := range sensors {
-		go sensors[i].Watch()
+		if i > 0 {
+			go sensors[i].Watch()
+		}
 	}
 
-	for {
-		time.Sleep(1 * time.Hour)
-	}
+	sensors[0].Watch()
 }
