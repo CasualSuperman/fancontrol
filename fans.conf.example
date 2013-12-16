@@ -1,0 +1,60 @@
+{
+	"sensors": {
+		"card": {
+			"location": "hwmon0/temp1_input",
+			"update": 10
+		},
+		"cpu": {
+			"location": "hwmon3/device/temp2_input",
+			"update": 5
+		},
+		"ambient": {
+			"location": "hwmon3/device/temp1_input",
+			"update": 30
+		}
+	},
+
+	"fans": {
+		"cpu": {
+			"pwm": "hwmon3/device/pwm1",
+			"fan": "hwmon3/device/fan1",
+			"speeds": {
+				"idle": 0,
+				"active": 90,
+				"full": 240
+			}
+		},
+		"case": {
+			"pwm": "hwmon3/device/pwm2",
+			"fan": "hwmon3/device/fan2",
+			"speeds": {
+				"idle": 80,
+				"active": 80,
+				"full": 235
+			}
+		}
+	},
+
+	"temps": {
+		"cpu": {
+			"cpu": {
+				"target": 35,
+				"max": 60
+			}
+		},
+		"case": {
+			"ambient": {
+				"target": 40,
+				"max": 50
+			},
+			"cpu": {
+				"target": 40,
+				"max": 60
+			},
+			"card": {
+				"target": 35,
+				"max": 70
+			}
+		}
+	}
+}
