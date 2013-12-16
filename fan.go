@@ -2,6 +2,11 @@ package main
 
 import "time"
 
+type (
+	temp uint8
+	pwm  uint8
+)
+
 type sensor struct {
 	name       string
 	sensorFile readableSysFile
@@ -16,16 +21,16 @@ type fan struct {
 	speeds  fanSpeeds
 
 	watching []struct {
-		s     *sensor
-		r     fanRelation
-		speed uint8
+		s   *sensor
+		r   fanRelation
+		pwm pwm
 	}
 }
 
 type fanSpeeds struct {
-	Idle   uint8
-	Active uint8
-	Full   uint8
+	Idle   pwm
+	Active pwm
+	Full   pwm
 }
 
 func convertSensor(name string, config jsonSensor) (s sensor, err error) {
@@ -68,34 +73,34 @@ func convertFan(name string, config jsonFan) (f fan, err error) {
 	return
 }
 
-func (s *sensor) GetValue() uint8 {
+func (s *sensor) Temp() temp {
 	val, err := s.sensorFile.ReadVal()
 	if err != nil {
 		panic(err)
 	}
 	println(s.name + " temp:", val)
-	return val
+	return temp(val)
 }
 
-func (f fanRelation) Relate(temp uint8) uint8 {
-	if temp < f.Target {
+func (f fanRelation) Relate(t temp) pwm {
+	if t < f.Target {
 		return f.Idle
 	}
-	if temp > f.Max {
-		return f.Max
+	if t > f.Max {
+		return f.Full
 	}
 
-	scaled := float32(temp)
+	scaled := float32(t)
 	scaled -= float32(f.Target)
 	scaled *= float32(f.Full-f.Active)
 	scaled /= float32(f.Max-f.Target)
 	scaled += float32(f.Active)
 
-	return uint8(scaled)
+	return pwm(scaled)
 }
 
 func (s *sensor) Update() {
-	val := s.GetValue()
+	val := s.Temp()
 	for _, f := range s.watchers {
 		f.Update(s, val)
 	}
@@ -108,12 +113,12 @@ func (s *sensor) Watch() {
 	}
 }
 
-func (f *fan) Update(s *sensor, val uint8) {
+func (f *fan) Update(s *sensor, val temp) {
 	found := false
 	for i := range f.watching {
 		watch := &f.watching[i]
 		if watch.s.name == s.name {
-			watch.speed = watch.r.Relate(val)
+			watch.pwm = watch.r.Relate(val)
 			found = true
 			break
 		}
@@ -121,20 +126,20 @@ func (f *fan) Update(s *sensor, val uint8) {
 	if !found {
 		panic("couldn't find sensor " + s.name + " for fan " + f.name)
 	}
-	speed := f.Speed()
-	println(f.name + " pwm:", speed)
-	f.SetSpeed(speed)
+	pwm := f.Pwm()
+	println(f.name + " pwm:", pwm)
+	f.SetPwm(pwm)
 }
 
-func (f *fan) SetSpeed(val uint8) {
-	f.pwmFile.WriteVal(val)
+func (f *fan) SetPwm(val pwm) {
+	f.pwmFile.WriteVal(uint8(val))
 }
 
-func (f *fan) Speed() uint8 {
+func (f *fan) Pwm() pwm {
 	max := f.speeds.Idle
 	for _, s := range f.watching {
-		if s.speed > max {
-			max = s.speed
+		if s.pwm > max {
+			max = s.pwm
 		}
 	}
 	return max

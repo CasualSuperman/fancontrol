@@ -25,8 +25,8 @@ type jsonFan struct {
 
 type fanRelation struct {
 	fanSpeeds
-	Target uint8
-	Max    uint8
+	Target temp
+	Max    temp
 }
 
 type jsonTemps map[string]fanRelation
@@ -100,9 +100,9 @@ func main() {
 			}
 
 			var watch struct {
-				s     *sensor
-				r     fanRelation
-				speed uint8
+				s   *sensor
+				r   fanRelation
+				pwm pwm
 			}
 			watch.s = sen
 			watch.r = relation
