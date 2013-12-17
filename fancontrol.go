@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"log/syslog"
 	"os"
 )
 
@@ -114,11 +115,19 @@ func main() {
 
 	config = nil
 
+	l, err := syslog.New(syslog.LOG_DEBUG, "fancontrol")
+
+	if err != nil {
+		println("unable to open syslog")
+	}
+
+	l.Info("Starting fancontroller")
+
 	for i := range sensors {
 		if i > 0 {
-			go sensors[i].Watch()
+			go sensors[i].Watch(l)
 		}
 	}
 
-	sensors[0].Watch()
+	sensors[0].Watch(l)
 }

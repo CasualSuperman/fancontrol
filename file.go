@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -31,9 +30,9 @@ func (w writableSysPath) Open() (writableSysFile, error) {
 	return writableSysFile{f}, err
 }
 
-func (w writableSysFile) WriteVal(val uint8) error {
+func (w writableSysFile) WriteString(val string) error {
 	w.Seek(0, 0)
-	_, err := fmt.Fprintf(w, "%d", val)
+	_, err := w.File.WriteString(val)
 	w.Sync()
 	return err
 }
